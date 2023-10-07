@@ -12,7 +12,7 @@ def check(ip):
     try:
         if 'v2links.com' in get('http://'+ip, headers={'Host':'vzu.us','Origin':'vzu.us'}).text:
             print('http://'+ip)
-except Exception as err:
+    except Exception as err:
         print('Error:', err)
 
 t=[]
