@@ -12,8 +12,8 @@ def check(ip):
     try:
         if 'v2links.com' in get('http://'+ip, headers={'Host':'vzu.us','Origin':'vzu.us'}).text:
             print('http://'+ip)
-    except:
-        return None
+except Exception as err:
+        print('Error:', err)
 
 t=[]
 for ip in all_ip:
