@@ -1,24 +1,65 @@
-from requests import get
-from threading import Thread
-from ipaddress import IPv4Network
+import undetected_chromedriver as uc
+from time import sleep
+from os import path
+import requests, zipfile, os
 
-all_range='109.106.240.0/21\n109.106.248.0/22\n109.106.252.0/22\n141.136.33.0/24\n141.136.34.0/24\n141.136.35.0/24\n141.136.36.0/24\n141.136.39.0/24\n141.136.41.0/24\n141.136.42.0/24\n141.136.43.0/24\n141.136.44.0/24\n141.136.45.0/24\n141.136.46.0/24\n141.136.47.0/24\n145.14.146.0/23\n145.14.148.0/22\n145.14.152.0/22\n145.14.156.0/22\n149.100.138.0/24\n149.100.140.0/22\n149.100.144.0/23\n149.100.146.0/23\n149.100.148.0/22\n149.100.152.0/23\n149.100.154.0/23\n149.100.156.0/23\n149.100.158.0/23\n149.62.37.0/24\n149.62.39.0/24\n151.106.112.0/20\n151.106.96.0/20\n153.92.10.0/24\n153.92.1.0/24\n153.92.11.0/24\n153.92.12.0/24\n153.92.13.0/24\n153.92.14.0/24\n153.92.2.0/24\n153.92.208.0/22\n153.92.212.0/22\n153.92.216.0/21\n153.92.3.0/24\n153.92.4.0/23\n153.92.6.0/24\n153.92.7.0/24\n153.92.8.0/24\n153.92.9.0/24\n154.41.224.0/22\n154.41.228.0/22\n154.41.232.0/22\n154.41.236.0/23\n154.41.238.0/23\n154.41.240.0/23\n154.41.242.0/24\n154.41.243.0/24\n154.41.248.0/24\n154.41.249.0/24\n154.41.250.0/24\n154.41.251.0/24\n154.41.252.0/23\n154.41.254.0/23\n154.49.136.0/23\n154.49.138.0/23\n154.49.140.0/22\n154.49.240.0/23\n154.49.242.0/23\n154.49.244.0/23\n154.49.246.0/23\n154.56.32.0/23\n154.56.34.0/23\n154.56.36.0/23\n154.56.38.0/23\n154.56.40.0/22\n154.56.44.0/22\n154.56.48.0/22\n154.56.52.0/22\n154.56.56.0/22\n154.56.60.0/23\n154.56.62.0/23\n154.62.104.0/24\n154.62.105.0/24\n154.62.106.0/24\n154.62.107.0/24\n154.62.108.0/23\n154.62.110.0/23\n156.67.208.0/20\n156.67.64.0/20\n160.238.36.0/24\n179.61.188.0/24\n179.61.189.0/24\n179.61.219.0/24\n179.61.246.0/24\n181.215.134.0/23\n181.215.68.0/23\n181.215.78.0/23\n185.166.188.0/24\n185.187.240.0/23\n185.201.10.0/23\n185.201.8.0/23'
+if os.name != 'nt':
+    # apt install xvfb
+    from pyvirtualdisplay import Display
+    display = Display(visible=0, size=(1360, 768))
+    display.start()
 
-all_ip=[str(i) for r in all_range.split('\n') for i in IPv4Network(r)]
+try: __file__
+except: __file__ = os.getcwd()
 
-#print(all_ip)
+base_dir=path.dirname(path.abspath(__file__))
+ext_file=path.join(base_dir, 'ext.crx')
+ext_dir=path.join(base_dir, 'ext')
 
-def check(ip):
-    try:
-        if 'v2links.com' in get('http://'+ip, headers={'Host':'vzu.us','Origin':'vzu.us'}).text:
-            print('http://'+ip)
-    except Exception as err:
-        print('Error:', err)
+options = uc.ChromeOptions()
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-gpu')
+options.add_argument('--disable-notifications')
+options.add_argument("--remote-debugging-port=9222")
+options.add_argument('--ignore-ssl-errors=yes')
+options.add_argument('--ignore-certificate-errors')
 
-t=[]
-for ip in all_ip:
-    t.append(Thread(target=lambda i=ip: check(i)))
+with open(ext_file, 'wb') as f:
+    f.write(requests.get('https://archive.org/download/ext_20231006/ext.crx').content)
+with zipfile.ZipFile(ext_file, 'r') as zip:
+    zip.extractall(ext_dir)
 
-for i in t: i.start()
-for i in t: i.join()
+options.add_argument('--load-extension='+ext_dir)
 
+proxy=None
+#proxy='http://73738zbpcibedc0-session-dhhiffydghdch-lifetime-20:okjz6fk9nkkx3rc@rp.proxyscrape.com:6060'
+
+
+driver = uc.Chrome(options=options)
+
+driver.maximize_window()
+driver.execute_script('window.open("https://vzu.us")')
+
+solved=False
+attempt=0
+
+while not solved:
+    sleep(5)
+    driver.switch_to.window(driver.window_handles[1])
+    if 'Just a moment' in driver.page_source:
+        driver.switch_to.window(driver.window_handles[0])
+    else:
+        solved=True
+        driver.switch_to.window(driver.window_handles[0])
+        driver.close()
+        driver.switch_to.window(driver.window_handles[0])
+
+    attempt+=1
+    if attempt >= 6:
+        raise Exception('30sec passed but captcha couldn\'t solve.')
+
+print(driver.page_source)
+driver.quit()
+
+
+# Done
