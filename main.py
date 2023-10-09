@@ -16,6 +16,8 @@ base_dir=path.dirname(path.abspath(__file__))
 ext_file=path.join(base_dir, 'ext.crx')
 ext_dir=path.join(base_dir, 'ext')
 
+PROXY = 'http://73738zbpcibedc0-session-jrndidbridbw-lifetime-20:okjz6fk9nkkx3rc@rp.proxyscrape.com:6060'
+
 options = uc.ChromeOptions()
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-gpu')
@@ -23,6 +25,7 @@ options.add_argument('--disable-notifications')
 options.add_argument("--remote-debugging-port=9222")
 options.add_argument('--ignore-ssl-errors=yes')
 options.add_argument('--ignore-certificate-errors')
+options.add_argument(f'--proxy-server={PROXY}')
 
 with open(ext_file, 'wb') as f:
     f.write(requests.get('https://archive.org/download/ext_20231006/ext.crx').content)
