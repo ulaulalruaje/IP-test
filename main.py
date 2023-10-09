@@ -92,7 +92,6 @@ options.add_argument('--disable-notifications')
 options.add_argument("--remote-debugging-port=9222")
 options.add_argument('--ignore-ssl-errors=yes')
 options.add_argument('--ignore-certificate-errors')
-options.add_argument(f'--proxy-server={PROXY}')
 
 with open(ext_file, 'wb') as f:
     f.write(requests.get('https://archive.org/download/ext_20231006/ext.crx').content)
@@ -100,7 +99,7 @@ with zipfile.ZipFile(ext_file, 'r') as zip:
     zip.extractall(ext_dir)
 
 options.add_argument('--load-extension='+ext_dir)
-#options.add_argument('--load-extension='+prext_dir)
+options.add_argument('--load-extension='+prext_dir)
 
 driver = uc.Chrome(options=options)
 
