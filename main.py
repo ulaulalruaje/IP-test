@@ -99,7 +99,7 @@ with zipfile.ZipFile(ext_file, 'r') as zip:
     zip.extractall(ext_dir)
 
 options.add_argument('--load-extension='+ext_dir)
-options.add_argument('--load-extension='+prext_dir)
+#options.add_argument('--load-extension='+prext_dir)
 
 driver = uc.Chrome(options=options)
 
